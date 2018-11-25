@@ -1,5 +1,5 @@
   
-//moment().format();
+moment().format();
 
   var config = {
     apiKey: "AIzaSyAeBbBmp-IgqN6kGzwglETbURw9bcOLlgg",
@@ -31,8 +31,6 @@
     min=$("#min").val().trim();
 
     
-   
-    
     database.ref().push({
      name:name,
      destination:destination,
@@ -41,30 +39,42 @@
       
     });
 
+
   });
 
     database.ref().on("child_added", function (snapshot){
 
-      console.log(snapshot.val)
-      firstTrainTime = snapshot.val().firstTrain
-      frequency = snapshot.val().min
-      console.log(snapshot.val().name);
-      console.log(snapshot.val().destination);
-      console.log(moment(firstTrainTime))
-      //console.log(snapshot.val().firstTrain);
-      //console.log(snapshot.val().min);
-  
+
+  var trainName = snapshot.val().name;
+  var trainDes = snapshot.val().destination;
+  var tFirstTrain = snapshot.val().firstTrain;
+  var trainMin = snapshot.val().min;
+
+  var timeArr = tFirstTrain.split(":");
+  var trainTime = moment().hours(timeArr[0]).minutes(timeArr[1]);
+  var highMoment = moment.max(moment(), trainTime);
+  var trainMin;
+  var arrival;
+
+  if (highMoment === trainTime) {
+    arrival = trainTime.format("hh:mm A");
+    trainMin = trainTime.diff(moment(), "minutes");
+  } else {
+
+    var timediff = moment().diff(trainTime, "minutes");
+    var trainRemainder = timediff % trainMin;
+    trainMin = trainMin - trainRemainder;
+
+    
+    arrival = moment().add(trainMin, "m").format("hh:mm A");
+  }
+ 
+$("#trainTable > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDes + "</td><td>" +
+trainMin + "</td><td>" + arrival + "</td><td>" + trainMin + "</td></tr>");
 
 
   });
 
-  console.log("this should say the time " +moment().add(7, 'hours'));
-
-var timestring1 = "2013-05-09T00:00:00Z";
-var timestring2 = "2013-05-09T02:00:00Z";
-var startdate = moment(timestring1);
-var expected_enddate = moment(timestring2);
-var returned_endate = moment(startdate).add(2, 'hours'); 
-
-console.log(expected_enddate)// see the cloning?
-returned_endate.isSame(expected_enddate)  // true
+  
+  
+ 
